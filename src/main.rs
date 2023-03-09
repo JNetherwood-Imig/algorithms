@@ -1,27 +1,21 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::time::Instant;
-use pbr::ProgressBar;
-use std::time::Duration;
-use std::thread;
+use clap::Parser;
 use std::io;
-const LEN: usize = 20_000;
+
+#[derive(Parser)]
+
+struct Args {
+    #[arg(short, long, default_value_t = 20_000)]
+    length: usize,
+}
 
 fn main() {
-    let mut list = [0; LEN];
-    let mut x = 1;
-    println!("Generating list...");
-    let list_t = Instant::now();
-    let mut pb = ProgressBar::new(20_000);
-    pb.format("[##-]");
-    for _i in 1..LEN {
-        insert(&mut list, x, 1);
-        x += 1;
-        pb.inc();
-    }
-    println!("\nGenerated list in {:.2?}", list_t.elapsed());
+    let args = Args::parse();
+    let mut list: Vec<i32> =(0..args.length as i32).collect();
 
-    println!("Enter a sorting method to use:");
+    println!("Enter a sorting method to use: \n    1. bubble \n    2. quick");
     let mut method = String::new();
     io::stdin()
         .read_line(&mut method)
@@ -40,10 +34,10 @@ fn main() {
 
     let before = Instant::now();
     println!("Sorting...");
-    if method == "quick" {
+    if method == "2" {
         quick_sort(&mut list);
         println!("Sorted in {:.2?}", before.elapsed())
-    } else if method == "bubble" {
+    } else if method == "1" {
         bubble_sort(&mut list);
         println!("Sorted in {:.2?}", before.elapsed())
     } else {
@@ -57,6 +51,8 @@ fn main() {
     io::stdin()
         .read_line(&mut output)
         .expect("Failed to read line");
+
+        let output: &str = &output.trim().to_ascii_lowercase();
     
     if output == "y" {
         println!("{:?}", list);
@@ -72,11 +68,6 @@ pub fn bubble_sort<T: Ord>(arr: &mut [T]) {
         }
     }
 }					
-
-fn insert<T>(array: &mut [T], value: T, index:usize) {
-    *array.last_mut().unwrap() = value;
-    array[index..].rotate_right(1);
-}
 
 fn quick_sort(slice: &mut [i32]) {
     if !slice.is_empty() {
