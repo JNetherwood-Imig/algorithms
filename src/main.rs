@@ -1,19 +1,25 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::time::Instant;
+use pbr::ProgressBar;
+use std::time::Duration;
+use std::thread;
 use std::io;
-const LEN: usize = 100_000;
+const LEN: usize = 20_000;
 
 fn main() {
     let mut list = [0; LEN];
     let mut x = 1;
     println!("Generating list...");
     let list_t = Instant::now();
+    let mut pb = ProgressBar::new(20_000);
+    pb.format("[##-]");
     for _i in 1..LEN {
         insert(&mut list, x, 1);
         x += 1;
+        pb.inc();
     }
-    println!("Generated list in {:.2?}", list_t.elapsed());
+    println!("\nGenerated list in {:.2?}", list_t.elapsed());
 
     println!("Enter a sorting method to use:");
     let mut method = String::new();
@@ -33,17 +39,27 @@ fn main() {
     println!("Shuffled in {:.2?}", shuffle_t.elapsed());
 
     let before = Instant::now();
-
-    if method == "quicksort" {
+    println!("Sorting...");
+    if method == "quick" {
         quick_sort(&mut list);
-        println!("{:?}", list);
-        println!("Elapsed time: {:.2?}", before.elapsed())
-    } else if method == "bubblesort" {
+        println!("Sorted in {:.2?}", before.elapsed())
+    } else if method == "bubble" {
         bubble_sort(&mut list);
-        println!("{:?}", list);
-        println!("Elapsed time: {:.2?}", before.elapsed())
+        println!("Sorted in {:.2?}", before.elapsed())
     } else {
         println!("Not a recognized method.")
+    }
+
+    let mut output = String::new();
+
+    println!("Would you like to print the sorted list? [y/n]");
+
+    io::stdin()
+        .read_line(&mut output)
+        .expect("Failed to read line");
+    
+    if output == "y" {
+        println!("{:?}", list);
     }
 }
 
